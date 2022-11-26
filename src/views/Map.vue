@@ -68,7 +68,63 @@
     </template>
 
     <template v-if="map.layers.points">
-      <LCanvasMarker :markers="markers" />
+      <!-- <template v-if="this.markerClicked != null">
+        <template v-for="(userDevices, user) in filteredLocationHistory">
+          <template v-for="(deviceLocations, device) in userDevices">
+            <LCircleMarker
+              v-for="(l, n) in deviceLocationFromLatLon(
+                this.markerClicked,
+                deviceLocations
+              )"
+              :key="`${user}-${device}-${n}`"
+              :lat-lng="[l.lat, l.lon]"
+              v-bind="circleMarker"
+            >
+              <LDeviceLocationPopup
+                :user="user"
+                :device="device"
+                :name="l.name"
+                :face="l.face"
+                :timestamp="l.tst"
+                :lat="l.lat"
+                :lon="l.lon"
+                :alt="l.alt"
+                :battery="l.batt"
+                :speed="l.vel"
+                :regions="l.inregions"
+                :wifi="{ ssid: l.SSID, bssid: l.BSSID }"
+                :address="l.addr"
+              ></LDeviceLocationPopup>
+            </LCircleMarker>
+          </template>
+        </template> 
+      </template> -->
+      <LCanvasMarker
+        :markers="markers"
+        :onClickCallback="
+          (e) => {
+            this.markerClicked = e;
+          }
+        "
+      >
+        <template v-if="this.markerClicked != null">
+          <div
+            position="absolute"
+            left="1000px"
+            top="400px"
+            width="20px"
+            height="20px"
+          >
+            <LDeviceLocationPopup
+              :wifi="{ ssid: '', bssid: '' }"
+              :lat="this.markerClicked.lat"
+              :lon="this.markerClicked.lon"
+              :user="'testuser'"
+              :options="{ className: 'leaflet-popup--for-pin' }"
+            ></LDeviceLocationPopup>
+          </div>
+        </template>
+      </LCanvasMarker>
     </template>
 
     <!-- <template v-if="map.layers.points">
@@ -151,6 +207,7 @@ export default {
   },
   data() {
     return {
+      markerClicked: null,
       attribution: this.$config.map.attribution,
       center: this.$store.state.map.center,
       controls: this.$config.map.controls,
@@ -211,6 +268,10 @@ export default {
       console.log("Loaded point count: " + counter);
       return markers;
     },
+    currentClicked() {
+      console.log(this.markerClicked);
+      return this.markerClicked;
+    },
   },
   methods: {
     ...mapMutations({
@@ -259,6 +320,21 @@ export default {
         name: lastLocation.name,
         face: lastLocation.face,
       }));
+    },
+    deviceLocationFromLatLon(object, deviceLocations) {
+      console.log(object);
+      console.log(object.latlng.lat);
+      console.log(object.latlng.lng);
+      let lastLocation = deviceLocations.find(
+        (l) =>
+          Math.abs(l.lat - object.latlng.lat) < 0.001 &&
+          Math.abs(l.lon - object.latlng.lng) < 0.001
+      );
+      console.log(lastLocation);
+      if (!lastLocation) {
+        return deviceLocations;
+      }
+      return [lastLocation];
     },
   },
   watch: {

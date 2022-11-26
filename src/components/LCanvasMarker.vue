@@ -56,6 +56,9 @@ export default {
       custom: false,
       default: null,
     },
+    onClickCallback: {
+      type: Function,
+    },
   },
   data() {
     return {
@@ -89,6 +92,7 @@ export default {
           zIndexOffset: this.zIndexOffset,
           draggable: this.draggable,
           opacity: this.opacity,
+          onClickCallback: this.onClickCallback,
         },
         this
       );
@@ -100,10 +104,9 @@ export default {
         myThis.mapObject = L.canvasIconLayer({}).addTo(
           myThis.$parent.$el.__vue__.mapObject
         );
-        myThis.mapObject.addLayers(myThis.markers);
-        myThis.mapObject.addOnClickListener((e) => {
-          console.log(e);
-        });
+        if(myThis.markers.length != 0)
+          myThis.mapObject.addLayers(myThis.markers);
+        myThis.mapObject.addOnClickListener((e) => {myThis.onClickCallback(e);});
         DomEvent.on(myThis.mapObject, myThis.$listeners);
         myThis.debouncedLatLngSync = debounce(myThis.latLngSync, 100);
         myThis.mapObject.on("move", myThis.debouncedLatLngSync);
